@@ -1,6 +1,6 @@
 #' ---
 #' title: "Benchmark test with mrgsolve and NONMEM"
-#' author: "Metrum Research Group"
+#' author: "Metrum Research Group & Matthew Fidler"
 #' date: ""
 #' output: 
 #'   github_document:
@@ -19,7 +19,7 @@
 #' # Introduction
 #' 
 #' This document runs simulations from a pharmacokinetic model using both 
-#' NONMEM and mrgsolve and compares the results. The benchmarks in this 
+#' NONMEM and rxode2 and compares the results. The benchmarks in this 
 #' set focus on dosing events (bolus and infusion), bioavailability, 
 #' lag times, reset and steady state, 
 #' 
@@ -31,16 +31,19 @@
 #' form  [here](#results) and numeric form [here](#numeric-summary).
 #' 
 #' 
-#' # mrgsolve package version
-packageVersion("mrgsolve")
+#' # rxode2 package version
+packageVersion("rxode2")
+#' # nonmem2rx package version
+packageVersion("nonmem2rx")
 #' 
 #' # Setup
 
-Sys.setenv(RSTUDIO_PANDOC = "/usr/lib/rstudio-server/bin/pandoc")
+Sys.setenv(RSTUDIO_PANDOC = Sys.which("pandoc"))
 
 #+ message = FALSE
-mrgsolve.loc <- NULL # "/data/home/Rlibs/"
-library(mrgsolve, lib.loc = mrgsolve.loc)
+library(rxode2)
+library(nonmem2rx)
+
 # --------------------------------
 #+ message = FALSE
 library(dplyr)
@@ -59,10 +62,12 @@ knitr::opts_chunk$set(comment = '.', fig.path = "results/img/dosing-")
 
 stopifnot(grepl("PsN", system("execute --version", intern = TRUE)))
 stopifnot(file.exists("locate-dosing"))
-source(here("shared", "tools.R"))
-source(here("shared", "data.R"))
+source(file.path("..", "shared", "tools.R"))
+source(file.path("..", "shared", "data.R"))
 
-#' # The `mrgsim()` model
+#' # The `rxode2()` model
+mod <- nonmem2rx("1001.ctl")
+
 mod <- mread_cache("1001.mod")
 mod <- update(mod, end = 130, delta = 1)
 
